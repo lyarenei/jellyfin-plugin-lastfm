@@ -1,7 +1,7 @@
 ---
 name: "ListenBrainz"
 guid: "59B20823-AAFE-454C-A393-17427F518631"
-version: "5.0.1.0"
+version: "5.1.0.0"
 targetAbi: "10.10.0.0"
 framework: "net8.0"
 overview: "Track your music habits with ListenBrainz."
@@ -16,5 +16,5 @@ artifacts:
   - "Jellyfin.Plugin.ListenBrainz.Http.dll"
   - "Jellyfin.Plugin.ListenBrainz.MusicBrainzApi.dll"
 changelog: >
-  Fix
-    - Submission of multiple artist MBIDs (#109 @moisespr123)
+  New
+    - Listen backup feature (#102 @lyarenei)

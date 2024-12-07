@@ -18,7 +18,7 @@ namespace Jellyfin.Plugin.ListenBrainz;
 /// <summary>
 /// ListenBrainz plugin implementation.
 /// </summary>
-public class PluginImplementation
+public class PluginImplementation : IDisposable
 {
     private readonly ILogger _logger;
     private readonly IListenBrainzClient _listenBrainzClient;
@@ -29,6 +29,8 @@ public class PluginImplementation
     private readonly object _userDataSaveLock = new();
     private readonly PlaybackTrackingManager _playbackTracker;
     private readonly ILibraryManager _libraryManager;
+    private readonly IBackupManager _backupManager;
+    private bool _isDisposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PluginImplementation"/> class.
@@ -39,13 +41,15 @@ public class PluginImplementation
     /// <param name="userDataManager">User data manager.</param>
     /// <param name="userManager">User manager.</param>
     /// <param name="libraryManager">Library manager.</param>
+    /// <param name="backupManager">Backup manager.</param>
     public PluginImplementation(
         ILogger logger,
         IListenBrainzClient listenBrainzClient,
         IMusicBrainzClient musicBrainzClient,
         IUserDataManager userDataManager,
         IUserManager userManager,
-        ILibraryManager libraryManager)
+        ILibraryManager libraryManager,
+        IBackupManager backupManager)
     {
         _logger = logger;
         _listenBrainzClient = listenBrainzClient;
@@ -55,6 +59,38 @@ public class PluginImplementation
         _userManager = userManager;
         _playbackTracker = PlaybackTrackingManager.Instance;
         _libraryManager = libraryManager;
+        _backupManager = backupManager;
+    }
+
+    /// <summary>
+    /// Finalizes an instance of the <see cref="PluginImplementation"/> class.
+    /// </summary>
+    ~PluginImplementation() => Dispose(false);
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Dispose managed and unmanaged (own) resources.
+    /// </summary>
+    /// <param name="disposing">Dispose managed resources.</param>
+    private void Dispose(bool disposing)
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            _backupManager.Dispose();
+        }
+
+        _isDisposed = true;
     }
 
     /// <summary>
@@ -199,6 +235,21 @@ public class PluginImplementation
             _logger.LogDebug(e, "Additional metadata are not available");
         }
 
+        if (config.IsBackupEnabled && userConfig.IsBackupEnabled)
+        {
+            try
+            {
+                _logger.LogInformation("Adding listen to backups...");
+                _backupManager.Backup(userConfig.UserName, data.Item, metadata, now);
+                _logger.LogInformation("Listen successfully backed up");
+            }
+            catch (Exception e)
+            {
+                _logger.LogInformation("Listen backup failed: {Reason}", e.Message);
+                _logger.LogDebug(e, "Listen backup failed");
+            }
+        }
+
         try
         {
             _logger.LogInformation("Sending listen...");
@@ -314,6 +365,21 @@ public class PluginImplementation
         {
             _logger.LogInformation("Additional metadata are not available: {Reason}", e.Message);
             _logger.LogDebug(e, "Additional metadata are not available");
+        }
+
+        if (config.IsBackupEnabled && userConfig.IsBackupEnabled)
+        {
+            try
+            {
+                _logger.LogInformation("Adding listen to backups...");
+                _backupManager.Backup(userConfig.UserName, data.Item, metadata, now);
+                _logger.LogInformation("Listen successfully backed up");
+            }
+            catch (Exception e)
+            {
+                _logger.LogInformation("Listen backup failed: {Reason}", e.Message);
+                _logger.LogDebug(e, "Listen backup failed");
+            }
         }
 
         try

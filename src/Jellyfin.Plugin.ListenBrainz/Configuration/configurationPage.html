@@ -56,6 +56,14 @@
                                 <span>Enable syncing favorites</span>
                             </label>
                         </div>
+                        <div class="checkboxContainer bootstrap-wrapper row no-gutters">
+                            <label class="inputLabel inputLabelUnfocused" for="IsUserBackupEnabled">
+                                <input is="emby-checkbox" type="checkbox" id="IsUserBackupEnabled"
+                                       name="IsUserBackupEnabled"/>
+                                <span>Enable listens backup</span>
+                            </label>
+                            <div class="fieldDescription">Has no effect if backup path is not configured.</div>
+                        </div>
                         <div class="bootstrap-wrapper row no-gutters horizontal-center">
                             <button is="emby-button" type="submit" id="SaveUserConfig"
                                     class="raised button-submit block emby-button col-md-2">
@@ -131,6 +139,20 @@
                             <div class="fieldDescription">Only necessary if you have other plugins working with favorite items.</div>
                         </div>
                         <div class="sectionTitleContainer flex align-items-center">
+                            <h4 class="sectionTitle">Backup of listens</h4>
+                        </div>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="BackupPath">Backup path</label>
+                            <div class="bootstrap-wrapper row no-gutters">
+                                <input id="BackupPath" name="BackupPath" type="text" is="emby-input"
+                                       class="bootstrap-wrapper col-md-9 vertical-center"/>
+                                <div id="SetBackupPath"
+                                     class="raised button block emby-button bootstrap-wrapper col-md-2 offset-md-1 vertical-center">
+                                    Browse
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sectionTitleContainer flex align-items-center">
                             <h4 class="sectionTitle">Allowed libraries for listen submission</h4>
                             <div class="raised button-alt headerHelpButton emby-button" id="ResetAllowedLibraries">
                                 Reset
@@ -157,6 +179,7 @@
                 ApiToken: "",
                 IsListenSubmitEnabled: false,
                 IsFavoritesSyncEnabled: false,
+                IsUserBackupEnabled: false,
             },
         };
 
@@ -194,6 +217,11 @@
             .addEventListener('submit', (event) => {
                 event.preventDefault();
                 onSubmitConfigForm(event.submitter.id);
+            });
+
+        document.querySelector('#SetBackupPath')
+            .addEventListener('mouseup', () => {
+                onSetBackupPath();
             });
 
         function onPageShow() {
@@ -304,6 +332,18 @@
                 });
         }
 
+        function onSetBackupPath() {
+            const browser = new Dashboard.DirectoryBrowser();
+            browser.show({
+                includeFiles: false,
+                callback: (selectedDir) => {
+                    browser.close();
+                    document.querySelector('#BackupPath').value = selectedDir;
+                },
+                header: "Select path for backups"
+            })
+        }
+
         function onSaveGeneralConfig() {
             Dashboard.showLoadingMsg();
             ApiClient.getPluginConfiguration(ListenBrainzConfig.PluginUniqueId)
@@ -388,6 +428,9 @@
             document.querySelector("#ShouldEmitUserRatingEvent")
                 .checked = data.ShouldEmitUserRatingEvent;
 
+            document.querySelector("#BackupPath")
+                .value = data.BackupPath;
+
             try {
                 buildAllowedLibrariesList(data.LibraryConfigs);
             } catch (err) {
@@ -409,6 +452,9 @@
 
             document.querySelector("#IsFavoritesSyncEnabled")
                 .checked = data.IsFavoritesSyncEnabled;
+
+            document.querySelector("#IsUserBackupEnabled")
+                .checked = data.IsBackupEnabled;
         }
 
         function getUserConfig(config, userId) {
@@ -427,6 +473,7 @@
                 ApiToken: btoa(getApiToken()),
                 IsListenSubmitEnabled: document.querySelector('#IsListenSubmitEnabled').checked,
                 IsFavoritesSyncEnabled: document.querySelector('#IsFavoritesSyncEnabled').checked,
+                IsBackupEnabled: document.querySelector('#IsUserBackupEnabled').checked,
                 UserName: userName,
             }
         }
@@ -439,6 +486,7 @@
                 IsAlternativeModeEnabled: document.querySelector('#IsAlternativeModeEnabled').checked,
                 IsImmediateFavoriteSyncEnabled: document.querySelector('#IsImmediateFavoriteSyncEnabled').checked,
                 ShouldEmitUserRatingEvent: document.querySelector('#ShouldEmitUserRatingEvent').checked,
+                BackupPath: document.querySelector('#BackupPath').value,
                 LibraryConfigs: getLibraryConfigsInputs(),
             }
         }

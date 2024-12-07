@@ -17,6 +17,7 @@ public class UserConfig
         IsListenSubmitEnabled = false;
         ApiToken = string.Empty;
         UserName = string.Empty;
+        IsBackupEnabled = false;
     }
 
     /// <summary>
@@ -61,4 +62,16 @@ public class UserConfig
     /// Gets or sets a ListenBrainz username.
     /// </summary>
     public string UserName { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether listens should be backed up.
+    /// </summary>
+    public bool IsBackupEnabled { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether listens backup is not enabled.
+    /// </summary>
+    [JsonIgnore]
+    [XmlIgnore]
+    public bool IsNotBackupEnabled => !IsBackupEnabled;
 }

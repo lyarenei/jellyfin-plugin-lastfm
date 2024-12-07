@@ -26,6 +26,7 @@
 - Mark favorite tracks in Jellyfin as loved listens in ListenBrainz
 - Sync loved listens in ListenBrainz as favorite tracks in Jellyfin (requires track MBID)
 - Cache listens when ListenBrainz server cannot be reached
+- Back up listens
 
 ...and probably some more to come.
 
@@ -40,11 +41,11 @@ the [releases page][RELEASES].
 
 ## Install via repository
 
-Currently, the server will always try installing newest plugin version, even if it's not compatible with the its
-version. Until [this issue][VERSION_ISSUE] is fixed, there will be multiple repositories for each Jellyfin server
-version. It is recommended to use the "main" repository, which will always contain the latest version of the plugin
-compatible with the latest major Jellyfin server. Otherwise you can use the specific ones to avoid breakage with the
-server version you are using.
+Currently, the server will always try installing newest plugin version, even if it's not compatible with its version.
+Until [this issue][VERSION_ISSUE] is fixed, there will be multiple repositories for each Jellyfin server version. It is
+recommended to use the "main" repository, which will always contain the latest version of the plugin compatible with the
+latest major Jellyfin server. Otherwise you can use the specific ones to avoid breakage with the server version you are
+using.
 
 | Jellyfin version               | Repo URL                                              |
 |--------------------------------|-------------------------------------------------------|

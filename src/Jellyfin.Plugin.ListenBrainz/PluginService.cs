@@ -1,3 +1,4 @@
+using Jellyfin.Plugin.ListenBrainz.Managers;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using Microsoft.Extensions.Hosting;
@@ -9,13 +10,14 @@ namespace Jellyfin.Plugin.ListenBrainz;
 /// <summary>
 /// ListenBrainz plugin service for Jellyfin server.
 /// </summary>
-public sealed class PluginService : IHostedService
+public sealed class PluginService : IHostedService, IDisposable
 {
     private readonly ILogger<PluginService> _logger;
     private readonly ISessionManager _sessionManager;
     private readonly IUserDataManager _userDataManager;
     private readonly PluginImplementation _plugin;
     private bool _isActive;
+    private bool _isDisposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PluginService"/> class.
@@ -45,13 +47,48 @@ public sealed class PluginService : IHostedService
         var musicBrainzLogger = loggerFactory.CreateLogger(Plugin.LoggerCategory + ".MusicBrainzApi");
         var musicBrainzClient = ClientUtils.GetMusicBrainzClient(musicBrainzLogger, clientFactory);
 
+        var backupLogger = loggerFactory.CreateLogger(Plugin.LoggerCategory + ".Backup");
+        var backupManager = new BackupManager(backupLogger);
+
         _plugin = new PluginImplementation(
             loggerFactory.CreateLogger(Plugin.LoggerCategory),
             listenBrainzClient,
             musicBrainzClient,
             userDataManager,
             userManager,
-            libraryManager);
+            libraryManager,
+            backupManager);
+    }
+
+    /// <summary>
+    /// Finalizes an instance of the <see cref="PluginService"/> class.
+    /// </summary>
+    ~PluginService() => Dispose(false);
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Dispose managed and unmanaged (own) resources.
+    /// </summary>
+    /// <param name="disposing">Dispose managed resources.</param>
+    private void Dispose(bool disposing)
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            _plugin.Dispose();
+        }
+
+        _isDisposed = true;
     }
 
     /// <inheritdoc />

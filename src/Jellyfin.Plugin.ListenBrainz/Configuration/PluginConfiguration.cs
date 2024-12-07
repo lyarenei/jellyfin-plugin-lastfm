@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
@@ -25,6 +26,7 @@ public class PluginConfiguration : BasePluginConfiguration
     {
         UserConfigs = new Collection<UserConfig>();
         LibraryConfigs = new Collection<LibraryConfig>();
+        BackupPath = string.Empty;
     }
 
     /// <summary>
@@ -106,4 +108,16 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     [SuppressMessage("Warning", "CA2227", Justification = "Needed for deserialization")]
     public Collection<LibraryConfig> LibraryConfigs { get; set; }
+
+    /// <summary>
+    /// Gets or sets backup path.
+    /// </summary>
+    public string BackupPath { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether backup feature is enabled.
+    /// </summary>
+    [JsonIgnore]
+    [XmlIgnore]
+    public bool IsBackupEnabled => !string.IsNullOrEmpty(BackupPath);
 }
