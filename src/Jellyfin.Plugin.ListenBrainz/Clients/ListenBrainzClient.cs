@@ -98,7 +98,11 @@ public class ListenBrainzClient : IListenBrainzClient
     }
 
     /// <inheritdoc />
-    public void SendFeedback(UserConfig config, bool isFavorite, string? recordingMbid = null, string? recordingMsid = null)
+    public void SendFeedback(
+        UserConfig config,
+        bool isFavorite,
+        string? recordingMbid = null,
+        string? recordingMsid = null)
     {
         var pluginConfig = Plugin.GetConfiguration();
         var request = new RecordingFeedbackRequest
@@ -125,14 +129,17 @@ public class ListenBrainzClient : IListenBrainzClient
 
     /// <inheritdoc />
     /// <exception cref="PluginException">Sending listens failed.</exception>
-    public async Task SendListensAsync(UserConfig config, IEnumerable<StoredListen> storedListens, CancellationToken cancellationToken)
+    public async Task SendListensAsync(
+        UserConfig config,
+        IEnumerable<Listen> listens,
+        CancellationToken cancellationToken)
     {
         var pluginConfig = Plugin.GetConfiguration();
         var request = new SubmitListensRequest
         {
             ApiToken = config.PlaintextApiToken,
             ListenType = ListenType.Import,
-            Payload = ToListens(storedListens),
+            Payload = listens,
             BaseUrl = pluginConfig.ListenBrainzApiUrl
         };
 
@@ -197,7 +204,11 @@ public class ListenBrainzClient : IListenBrainzClient
         GetUserFeedbackResponse response;
         do
         {
-            var request = new GetUserFeedbackRequest(config.UserName, FeedbackScore.Loved, Limits.MaxItemsPerGet, offset);
+            var request = new GetUserFeedbackRequest(
+                config.UserName,
+                FeedbackScore.Loved,
+                Limits.MaxItemsPerGet,
+                offset);
             try
             {
                 response = await _apiClient.GetUserFeedback(request, cancellationToken);
@@ -221,24 +232,6 @@ public class ListenBrainzClient : IListenBrainzClient
         while (offset < response.TotalCount);
 
         return recordingMbids;
-    }
-
-    /// <summary>
-    /// Convert all <see cref="StoredListen"/>s to <see cref="Listen"/>s.
-    /// </summary>
-    /// <param name="storedListens">Stored listens to convert.</param>
-    /// <returns>Converted listens.</returns>
-    private IEnumerable<Listen> ToListens(IEnumerable<StoredListen> storedListens)
-    {
-        if (_libraryManager is null) throw new InvalidOperationException("Library manager is not available");
-
-        var listensToConvert = storedListens.ToArray();
-        return listensToConvert.Select(l =>
-        {
-            var baseItem = _libraryManager.GetItemById(l.Id);
-            var audio = (Audio?)baseItem ?? throw new PluginException("Invalid item");
-            return audio.AsListen(l.ListenedAt, l.Metadata);
-        });
     }
 
     /// <summary>

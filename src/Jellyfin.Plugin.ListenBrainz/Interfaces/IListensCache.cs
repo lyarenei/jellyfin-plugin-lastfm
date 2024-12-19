@@ -35,6 +35,13 @@ public interface IListensCache
     public IEnumerable<StoredListen> GetListens(Guid userId);
 
     /// <summary>
+    /// Remove specified listen from cache for specified user.
+    /// </summary>
+    /// <param name="userId">Jellyfin user ID associated with the listen.</param>
+    /// <param name="listen">Listen to remove.</param>
+    public void RemoveListen(Guid userId, StoredListen listen);
+
+    /// <summary>
     /// Remove specified listens from cache for specified user.
     /// </summary>
     /// <param name="userId">Jellyfin user ID associated with the listens.</param>

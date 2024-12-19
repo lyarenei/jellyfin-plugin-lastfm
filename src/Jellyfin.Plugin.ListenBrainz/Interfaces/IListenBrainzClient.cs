@@ -1,3 +1,4 @@
+using Jellyfin.Plugin.ListenBrainz.Api.Models;
 using Jellyfin.Plugin.ListenBrainz.Configuration;
 using Jellyfin.Plugin.ListenBrainz.Dtos;
 using MediaBrowser.Controller.Entities.Audio;
@@ -42,10 +43,10 @@ public interface IListenBrainzClient
     /// Send multiple listens ('import') to ListenBrainz.
     /// </summary>
     /// <param name="config">ListenBrainz user configuration.</param>
-    /// <param name="storedListens">Listens to send.</param>
+    /// <param name="listens">Listens to send.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task representing asynchronous operation.</returns>
-    public Task SendListensAsync(UserConfig config, IEnumerable<StoredListen> storedListens, CancellationToken cancellationToken);
+    public Task SendListensAsync(UserConfig config, IEnumerable<Listen> listens, CancellationToken cancellationToken);
 
     /// <summary>
     /// Validate specified API token.
